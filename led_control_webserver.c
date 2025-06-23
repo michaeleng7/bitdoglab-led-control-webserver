@@ -71,7 +71,7 @@ static err_t tcp_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, er
 
 // Função de calibração do sensor
 static void calibrate_sound_sensor(void) {
-    printf("Calibrando sensor de som...\n");
+    printf("Calibrating sound sensor...\n");
     
     uint32_t sum = 0;
     for(int i = 0; i < SOUND_SAMPLES; i++) {
@@ -82,7 +82,7 @@ static void calibrate_sound_sensor(void) {
     }
     
     sound.baseline = sum / SOUND_SAMPLES;
-    printf("Calibração concluída. Baseline: %d\n", sound.baseline);
+    printf("Calibration complete. Baseline: %d\n", sound.baseline);
 }
 
 // Função de callback para processar requisições HTTP
@@ -152,7 +152,7 @@ static err_t tcp_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, er
              "<!DOCTYPE html>\n"
              "<html>\n"
              "<head>\n"
-             "<title>Monitoramento BitDog</title>\n"
+             "<title>BitDogLab Monitoring</title>\n"
              "<style>\n"
              "body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }\n"
              "h1 { font-size: 48px; margin-bottom: 30px; }\n"
@@ -174,23 +174,23 @@ static err_t tcp_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, er
              "</div>\n"
              "<div class='status-item'>\n"
              "Som Detectado: <span class='%s'>%s</span>\n"
-             "(ADC: %d, Variação: %d)\n"
+             "(ADC: %d, Variation: %d)\n"
              "</div>\n"
              "<div class='status-item'>\n"
-             "Temperatura: %.1f °C\n"
+             "Temperature: %.1f °C\n"
              "</div>\n"
              "</div>\n"
              "<div style='margin-top: 30px;'>\n"
-             "<p><small>Última atualização: %02d:%02d:%02d</small></p>\n"
+             "<p><small>Last update: %02d:%02d:%02d</small></p>\n"
              "</div>\n"
              "</body>\n"
              "</html>\n",
              last_button_a_state ? "green" : "red",
-             last_button_a_state ? "Solto" : "Pressionado",
+             last_button_a_state ? "OFF" : "ON",
              last_button_state ? "green" : "red",
-             last_button_state ? "Solto" : "Pressionado",
-             strcmp(last_sound_level, "ALTO") == 0 ? "high" : 
-             strcmp(last_sound_level, "MEDIO") == 0 ? "medium" : "low",
+             last_button_state ? "OFF" : "ON",
+             strcmp(last_sound_level, "HIGH") == 0 ? "high" : 
+             strcmp(last_sound_level, "MED") == 0 ? "medium" : "low",
              last_sound_level,
              last_sound_value,
              last_sound_variation,
@@ -220,13 +220,13 @@ static err_t tcp_server_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 static void check_button_status(void) {
     bool current_state_b = gpio_get(BUTTON_B_PIN);
     if (current_state_b != last_button_state) {
-        printf("Botão B: %s\n", current_state_b ? "Solto" : "Pressionado");
+        printf("Button B: %s\n", current_state_b ? "OFF" : "ON");
         last_button_state = current_state_b;
     }
 
     bool current_state_a = gpio_get(BUTTON_A_PIN);
     if (current_state_a != last_button_a_state) {
-        printf("Botão A: %s\n", current_state_a ? "Solto" : "Pressionado");
+        printf("Button A: %s\n", current_state_a ? "OFF" : "ON");
         last_button_a_state = current_state_a;
     }
 }
@@ -280,7 +280,7 @@ static void read_sound_with_debug(void) {
     
     // Log detalhado a cada segundo
     if (sample_count % 10 == 0) {
-        printf("Som - ADC: %d, Min: %d, Max: %d, Variação: %d\n", 
+        printf("Sound - ADC: %d, Min: %d, Max: %d, Variation: %d\n", 
                current_value, 
                min_adc, 
                max_adc,
@@ -317,7 +317,7 @@ static void detect_sound_peaks(void) {
     
     // Só mostra se houver variação significativa
     if (abs(variation) > 10) {  // Threshold de detecção
-        printf("Som detectado! ADC: %d, Variação: %d, Baseline: %d\n", 
+        printf("Sound detected! ADC: %d, Variation: %d, Baseline: %d\n", 
                current, variation, baseline);
     }
 }
@@ -359,18 +359,18 @@ static void process_sound(void) {
     // Classifica o som por intensidade
     const char* nivel;
     if (var_abs > SOUND_THRESHOLD_HIGH) {
-        nivel = "ALTO";
+        nivel = "HIGH";
     } else if (var_abs > SOUND_THRESHOLD_MED) {
-        nivel = "MEDIO";
+        nivel = "MED";
     } else if (var_abs > SOUND_THRESHOLD_LOW) {
-        nivel = "BAIXO";
+        nivel = "LOW";
     } else {
         return; // Ignora variações muito pequenas
     }
     
     strncpy(last_sound_level, nivel, sizeof(last_sound_level));
     
-    printf("Som: ADC=%d, Var=%d, Med=%d, Nivel=%s\n", 
+    printf("Sound: ADC=%d, Var=%d, Med=%d, Level=%s\n", 
            current, variation, avg, last_sound_level);
     sound.last_report = current_time;
 }
@@ -447,7 +447,7 @@ int main()
     }
     baseline_adc = sum / 16;
 
-    printf("Sistema pronto!\n");
+    printf("Ready System!\n");
     printf("--------------------\n\n");
     
     uint32_t last_poll_time = 0;
